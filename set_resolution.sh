@@ -78,6 +78,7 @@ for i in {1..5}; do
     fi
     sleep 2  # Wait 2 seconds before retrying
 done
+echo "Resolution setup complete for this session."
 EOF
 
 # Set permissions and ownership
@@ -86,14 +87,18 @@ chown pi:pi "$RESOLUTION_SCRIPT"
 chown pi:pi "$WAYFIRE_CONFIG"
 chmod 644 "$WAYFIRE_CONFIG"
 
-# Apply immediately
+# Apply immediately with proper environment
 echo "Applying resolution based on detected screens now..."
-su - pi -c "/home/pi/set_resolution_auto.sh"
+if [ -n "$XDG_RUNTIME_DIR" ]; then
+    su - pi -c "/home/pi/set_resolution_auto.sh"
+else
+    echo "Warning: No Wayland session available yet, resolution will apply after reboot."
+fi
 
 # Clean up this script
 echo "Cleaning up downloaded script..."
 rm -f "$0"
 
 # Reboot the Pi
-echo "Rebooting now to apply changes..."
+echo "Rebooting now to apply changes permanently..."
 reboot
