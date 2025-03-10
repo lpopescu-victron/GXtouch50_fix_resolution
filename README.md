@@ -33,8 +33,11 @@ Select your screen model:
 1) GX Touch 50 (800x480)
 2) GX Touch 70 (1024x600)
 3) Default Pi settings (no custom resolution)
+
 Enter your choice (1-3): 1
+
 Step 4: Reboot
+
 The script will configure a systemd service and reboot the Raspberry Pi to apply the resolution. After reboot, the selected resolution will be enforced on both HDMI ports (if applicable).
 
 What Happens After Running?
