@@ -10,7 +10,7 @@ fi
 
 # Clean up old files to ensure fresh setup
 echo "Cleaning up old resolution files..."
-rm -f /home/pi/set_resolution_auto.sh /home/pi/resolution_log.txt /home/pi/.config/wayfire.ini
+rm -f /home/pi/set_resolution_auto.sh /home/pi/resolution_log.txt /home/pi/.config/wayfire.ini /etc/systemd/system/set-resolution.service
 
 # Update package lists and install wlr-randr
 echo "Updating package lists and installing wlr-randr..."
@@ -56,13 +56,17 @@ LOG_FILE="/home/pi/resolution_log.txt"
 echo "Resolution script started at \$(date)" > "\$LOG_FILE"
 
 # Wait for display initialization
-sleep 10
-echo "Waited 10 seconds for display initialization" >> "\$LOG_FILE"
+sleep 15
+echo "Waited 15 seconds for display initialization" >> "\$LOG_FILE"
+
+# Ensure Wayland environment
+export XDG_RUNTIME_DIR=/run/user/\$(id -u)
+echo "Set XDG_RUNTIME_DIR to \$XDG_RUNTIME_DIR" >> "\$LOG_FILE"
 
 # Apply to HDMI-A-1
 echo "Applying selected model: $SCREEN_MODEL to HDMI-A-1..." | tee -a "\$LOG_FILE"
 if [ "$RESOLUTION" != "default" ]; then
-    wlr-randr --output HDMI-A-1 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && echo "Successfully set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE" || echo "Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
+    wlr-randr --output HDMI-A-1 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && echo "Successfully set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE" || echo "Failed to set $RESOLUTION on HDMI-A-1, trying 800x480@60..." >> "\$LOG_FILE" && wlr-randr --output HDMI-A-1 --custom-mode 800x480@60 2>>"\$LOG_FILE" && echo "Fallback to 800x480@60 succeeded on HDMI-A-1" >> "\$LOG_FILE" || echo "Fallback failed on HDMI-A-1" >> "\$LOG_FILE"
 else
     echo "Using default resolution for HDMI-A-1" | tee -a "\$LOG_FILE"
 fi
@@ -70,7 +74,7 @@ fi
 # Apply to HDMI-A-2
 echo "Applying selected model: $SCREEN_MODEL to HDMI-A-2..." | tee -a "\$LOG_FILE"
 if [ "$RESOLUTION" != "default" ]; then
-    wlr-randr --output HDMI-A-2 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && echo "Successfully set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE" || echo "Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
+    wlr-randr --output HDMI-A-2 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && echo "Successfully set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE" || echo "Failed to set $RESOLUTION on HDMI-A-2, trying 800x480@60..." >> "\$LOG_FILE" && wlr-randr --output HDMI-A-2 --custom-mode 800x480@60 2>>"\$LOG_FILE" && echo "Fallback to 800x480@60 succeeded on HDMI-A-2" >> "\$LOG_FILE" || echo "Fallback failed on HDMI-A-2" >> "\$LOG_FILE"
 else
     echo "Using default resolution for HDMI-A-2" | tee -a "\$LOG_FILE"
 fi
@@ -88,20 +92,24 @@ cat <<EOF > "$SERVICE_FILE"
 [Unit]
 Description=Set screen resolution on HDMI ports
 After=graphical.target
+Wants=graphical.target
 
 [Service]
 Type=oneshot
 User=pi
+Environment=DISPLAY=:0
 ExecStart=/home/pi/set_resolution_auto.sh
 RemainAfterExit=yes
+Restart=on-failure
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Enable and start the service
-systemctl enable set-resolution.service
+# Enable and reload systemd
 systemctl daemon-reload
+systemctl enable set-resolution.service
 
 # Inform user
 echo "Resolution for $SCREEN_MODEL will be applied after reboot."
