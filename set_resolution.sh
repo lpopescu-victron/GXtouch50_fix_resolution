@@ -62,7 +62,7 @@ echo "Selected screen model: $SCREEN_MODEL"
 echo "Creating new set_resolution.sh..."
 cat <<EOF > /home/pi/set_resolution.sh
 #!/bin/bash
-sleep 10
+sleep 30
 LOG_FILE="/home/pi/resolution_log.txt"
 touch "\$LOG_FILE"
 chmod 666 "\$LOG_FILE"
