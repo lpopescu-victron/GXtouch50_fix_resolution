@@ -107,7 +107,7 @@ fi
 echo "Script completed at \$(date)" >> "\$LOG_FILE"
 
 # Clean up after successful execution
-rm -f /home/pi/set_resolution.sh && echo "Deleted set_resolution.sh after execution." >> "\$LOG_FILE"
+# rm -f /home/pi/set_resolution.sh && echo "Deleted set_resolution.sh after execution." >> "\$LOG_FILE"
 EOF
 
 # Set permissions
