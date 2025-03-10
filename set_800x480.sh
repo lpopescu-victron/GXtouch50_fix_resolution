@@ -61,5 +61,10 @@ chmod 644 "$WAYFIRE_CONFIG"
 echo "Applying 800x480 resolution to both HDMI ports now..."
 su - pi -c "/home/pi/set_resolution.sh"
 
-echo "Setup complete! Resolution set to 800x480 for both HDMI ports."
-echo "Please reboot to ensure it applies on startup: sudo reboot"
+# Clean up this script
+echo "Cleaning up downloaded script..."
+rm -f "$0"
+
+# Reboot the Pi
+echo "Rebooting now to apply changes..."
+reboot
