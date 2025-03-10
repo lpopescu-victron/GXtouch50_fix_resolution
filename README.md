@@ -6,7 +6,7 @@ To download and execute the script in one step:
 
 ```bash
 wget https://raw.githubusercontent.com/lpopescu-victron/GXtouch_fix_resolution/main/set_resolution.sh && chmod +x set_resolution.sh && sudo ./set_resolution.sh
-
+# End of script
 
 Features
 Cleans up previous resolution scripts and services.
