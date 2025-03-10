@@ -11,22 +11,22 @@ fi
 
 # Stop any running processes related to the previous resolution setup
 echo "Stopping any running set-resolution processes..."
-systemctl stop set-resolution.service 2>/dev/null
-pkill -f "/home/pi/set_resolution.sh" 2>/dev/null
+systemctl stop set-resolution.service 2>/dev/null && echo "Stopped set-resolution.service."
+pkill -f "/home/pi/set_resolution.sh" 2>/dev/null && echo "Killed any running set_resolution.sh processes."
 
 # Delete previous files
 echo "Cleaning up previous files..."
-rm -f /home/pi/set_resolution.sh 2>/dev/null
-rm -f /home/pi/resolution_log.txt 2>/dev/null
-rm -f /etc/systemd/system/set-resolution.service 2>/dev/null
+rm -f /home/pi/set_resolution.sh 2>/dev/null && echo "Deleted old set_resolution.sh."
+rm -f /home/pi/resolution_log.txt 2>/dev/null && echo "Deleted old resolution_log.txt."
+rm -f /etc/systemd/system/set-resolution.service 2>/dev/null && echo "Deleted old set-resolution.service."
 
 # Reload systemd to remove any lingering service definitions
-systemctl daemon-reload
+echo "Reloading systemd..."
+systemctl daemon-reload && echo "Systemd reloaded."
 
 # Install wlr-randr
 echo "Installing wlr-randr..."
-apt update
-apt install -y wlr-randr
+apt update && apt install -y wlr-randr && echo "wlr-randr installed."
 
 # Prompt user to select screen model
 echo "Select your screen model:"
@@ -59,6 +59,7 @@ esac
 echo "Selected screen model: $SCREEN_MODEL"
 
 # Create resolution script
+echo "Creating new set_resolution.sh..."
 cat <<EOF > /home/pi/set_resolution.sh
 #!/bin/bash
 sleep 60
@@ -85,10 +86,12 @@ echo "Script completed at \$(date)" >> "\$LOG_FILE"
 EOF
 
 # Set permissions
-chmod +x /home/pi/set_resolution.sh
-chown pi:pi /home/pi/set_resolution.sh
+echo "Setting permissions for set_resolution.sh..."
+chmod +x /home/pi/set_resolution.sh && echo "Permissions set."
+chown pi:pi /home/pi/set_resolution.sh && echo "Ownership set to pi:pi."
 
 # Create systemd service
+echo "Creating set-resolution.service..."
 cat <<EOF > /etc/systemd/system/set-resolution.service
 [Unit]
 Description=Set screen resolution on both HDMI ports
@@ -106,8 +109,9 @@ WantedBy=graphical.target
 EOF
 
 # Enable service
-systemctl daemon-reload
-systemctl enable set-resolution.service
+echo "Enabling set-resolution.service..."
+systemctl daemon-reload && echo "Systemd reloaded."
+systemctl enable set-resolution.service && echo "set-resolution.service enabled."
 
 # Inform user
 if [ -n "$RESOLUTION" ]; then
