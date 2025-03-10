@@ -36,29 +36,43 @@ else
     fi
 fi
 
-# Create a separate resolution script with detection and retry logic
+# Create a separate resolution script with detection, retry logic, and echo messages
 RESOLUTION_SCRIPT="/home/pi/set_resolution_auto.sh"
 cat <<'EOF' > "$RESOLUTION_SCRIPT"
 #!/bin/bash
 # Detect screen model and set resolution on both HDMI ports with retry
 for i in {1..5}; do
     # Check HDMI-A-1
-    HDMI1_MODEL=$(wlr-randr | grep -A1 "HDMI-A-1" | grep -o '"[^"]*"')
-    if echo "$HDMI1_MODEL" | grep -q "VEY GX Touch 50"; then
-        wlr-randr --output HDMI-A-1 --custom-mode 800x480@60 2>/dev/null && HDMI1_SET=true || HDMI1_SET=false
+    HDMI1_MODEL=$(wlr-randr | grep -A1 "HDMI-A-1" | grep -o '"[^"]*"' | head -n1)
+    if [ -n "$HDMI1_MODEL" ]; then
+        if echo "$HDMI1_MODEL" | grep -q "VEY GX Touch 50"; then
+            echo "Detected GX Touch 50 on HDMI-A-1, setting 800x480@60..."
+            wlr-randr --output HDMI-A-1 --custom-mode 800x480@60 2>/dev/null && HDMI1_SET=true || HDMI1_SET=false
+        else
+            echo "Detected $HDMI1_MODEL on HDMI-A-1, setting 1024x600@60..."
+            wlr-randr --output HDMI-A-1 --custom-mode 1024x600@60 2>/dev/null && HDMI1_SET=true || HDMI1_SET=false
+        fi
     else
-        wlr-randr --output HDMI-A-1 --custom-mode 1024x600@60 2>/dev/null && HDMI1_SET=true || HDMI1_SET=false
+        echo "No screen detected on HDMI-A-1, skipping..."
+        HDMI1_SET=true  # Skip if no display
     fi
 
     # Check HDMI-A-2
-    HDMI2_MODEL=$(wlr-randr | grep -A1 "HDMI-A-2" | grep -o '"[^"]*"')
-    if echo "$HDMI2_MODEL" | grep -q "VEY GX Touch 50"; then
-        wlr-randr --output HDMI-A-2 --custom-mode 800x480@60 2>/dev/null && HDMI2_SET=true || HDMI2_SET=false
+    HDMI2_MODEL=$(wlr-randr | grep -A1 "HDMI-A-2" | grep -o '"[^"]*"' | head -n1)
+    if [ -n "$HDMI2_MODEL" ]; then
+        if echo "$HDMI2_MODEL" | grep -q "VEY GX Touch 50"; then
+            echo "Detected GX Touch 50 on HDMI-A-2, setting 800x480@60..."
+            wlr-randr --output HDMI-A-2 --custom-mode 800x480@60 2>/dev/null && HDMI2_SET=true || HDMI2_SET=false
+        else
+            echo "Detected $HDMI2_MODEL on HDMI-A-2, setting 1024x600@60..."
+            wlr-randr --output HDMI-A-2 --custom-mode 1024x600@60 2>/dev/null && HDMI2_SET=true || HDMI2_SET=false
+        fi
     else
-        wlr-randr --output HDMI-A-2 --custom-mode 1024x600@60 2>/dev/null && HDMI2_SET=true || HDMI2_SET=false
+        echo "No screen detected on HDMI-A-2, skipping..."
+        HDMI2_SET=true  # Skip if no display
     fi
 
-    # Exit loop if both are set
+    # Exit loop if both are set or no further changes needed
     if [ "$HDMI1_SET" = true ] && [ "$HDMI2_SET" = true ]; then
         break
     fi
@@ -74,3 +88,12 @@ chmod 644 "$WAYFIRE_CONFIG"
 
 # Apply immediately
 echo "Applying resolution based on detected screens now..."
+su - pi -c "/home/pi/set_resolution_auto.sh"
+
+# Clean up this script
+echo "Cleaning up downloaded script..."
+rm -f "$0"
+
+# Reboot the Pi
+echo "Rebooting now to apply changes..."
+reboot
