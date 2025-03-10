@@ -1,0 +1,2 @@
+# GXtouch50_fix_resolution
+GXtouch50_fix_resolution
