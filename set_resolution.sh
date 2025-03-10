@@ -87,13 +87,8 @@ chown pi:pi "$RESOLUTION_SCRIPT"
 chown pi:pi "$WAYFIRE_CONFIG"
 chmod 644 "$WAYFIRE_CONFIG"
 
-# Apply immediately with proper environment
-echo "Applying resolution based on detected screens now..."
-if [ -n "$XDG_RUNTIME_DIR" ]; then
-    su - pi -c "/home/pi/set_resolution_auto.sh"
-else
-    echo "Warning: No Wayland session available yet, resolution will apply after reboot."
-fi
+# Skip immediate application, rely on reboot
+echo "Resolution will be applied after reboot based on detected screens."
 
 # Clean up this script
 echo "Cleaning up downloaded script..."
@@ -101,4 +96,5 @@ rm -f "$0"
 
 # Reboot the Pi
 echo "Rebooting now to apply changes permanently..."
+echo "After reboot, check resolution with: wlr-randr"
 reboot
