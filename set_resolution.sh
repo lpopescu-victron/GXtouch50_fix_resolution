@@ -105,6 +105,9 @@ if [ -n "$RESOLUTION" ]; then
     grep -q "$RESOLUTION" "\$LOG_FILE" && echo "Resolution applied successfully." >> "\$LOG_FILE" || echo "Failed to apply resolution." >> "\$LOG_FILE"
 fi
 echo "Script completed at \$(date)" >> "\$LOG_FILE"
+
+# Clean up after successful execution
+rm -f /home/pi/set_resolution.sh && echo "Deleted set_resolution.sh after execution." >> "\$LOG_FILE"
 EOF
 
 # Set permissions
@@ -142,10 +145,6 @@ if [ -n "$RESOLUTION" ]; then
 else
     echo "Default Pi settings will be used after reboot."
 fi
-
-# Delete the downloaded Git script
-echo "Deleting the downloaded Git script..."
-rm -f "$(basename "$0")" && echo "Deleted the downloaded Git script."
 
 echo "Rebooting now..."
 
