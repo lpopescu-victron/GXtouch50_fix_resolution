@@ -8,6 +8,10 @@ if [ "$EUID" -ne 0 ]; then
     exit 1
 fi
 
+# Clean up old files to ensure fresh setup
+echo "Cleaning up old resolution files..."
+rm -f /home/pi/set_resolution_auto.sh /home/pi/resolution_log.txt /home/pi/.config/wayfire.ini
+
 # Update package lists and install wlr-randr
 echo "Updating package lists and installing wlr-randr..."
 apt update
@@ -43,30 +47,7 @@ esac
 
 echo "Selected screen model: $SCREEN_MODEL"
 
-# Create or edit ~/.config/wayfire.ini for user 'pi'
-WAYFIRE_CONFIG="/home/pi/.config/wayfire.ini"
-mkdir -p /home/pi/.config
-chown pi:pi /home/pi/.config
-
-# Check if wayfire.ini exists and has [autostart] section
-if [ ! -f "$WAYFIRE_CONFIG" ]; then
-    echo "Creating new wayfire.ini..."
-    cat <<EOF > "$WAYFIRE_CONFIG"
-[autostart]
-resolution_script = /home/pi/set_resolution_auto.sh
-EOF
-else
-    if ! grep -q "\[autostart\]" "$WAYFIRE_CONFIG"; then
-        echo "Adding [autostart] section..."
-        echo -e "\n[autostart]" >> "$WAYFIRE_CONFIG"
-    fi
-    if ! grep -q "resolution_script" "$WAYFIRE_CONFIG"; then
-        echo "Adding resolution script to autostart..."
-        sed -i "/\[autostart\]/a resolution_script = /home/pi/set_resolution_auto.sh" "$WAYFIRE_CONFIG"
-    fi
-fi
-
-# Create a separate resolution script with fixed resolution and logging
+# Create resolution script
 RESOLUTION_SCRIPT="/home/pi/set_resolution_auto.sh"
 cat <<EOF > "$RESOLUTION_SCRIPT"
 #!/bin/bash
@@ -75,8 +56,8 @@ LOG_FILE="/home/pi/resolution_log.txt"
 echo "Resolution script started at \$(date)" > "\$LOG_FILE"
 
 # Wait for display initialization
-sleep 5
-echo "Waited 5 seconds for display initialization" >> "\$LOG_FILE"
+sleep 10
+echo "Waited 10 seconds for display initialization" >> "\$LOG_FILE"
 
 # Apply to HDMI-A-1
 echo "Applying selected model: $SCREEN_MODEL to HDMI-A-1..." | tee -a "\$LOG_FILE"
@@ -100,8 +81,27 @@ EOF
 # Set permissions and ownership
 chmod +x "$RESOLUTION_SCRIPT"
 chown pi:pi "$RESOLUTION_SCRIPT"
-chown pi:pi "$WAYFIRE_CONFIG"
-chmod 644 "$WAYFIRE_CONFIG"
+
+# Create systemd service to run script at boot
+SERVICE_FILE="/etc/systemd/system/set-resolution.service"
+cat <<EOF > "$SERVICE_FILE"
+[Unit]
+Description=Set screen resolution on HDMI ports
+After=graphical.target
+
+[Service]
+Type=oneshot
+User=pi
+ExecStart=/home/pi/set_resolution_auto.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start the service
+systemctl enable set-resolution.service
+systemctl daemon-reload
 
 # Inform user
 echo "Resolution for $SCREEN_MODEL will be applied after reboot."
