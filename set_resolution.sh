@@ -55,6 +55,8 @@ export XDG_RUNTIME_DIR=/run/user/1000
 export WAYLAND_DISPLAY=wayland-0
 echo "XDG_RUNTIME_DIR=\$XDG_RUNTIME_DIR" >> "\$LOG_FILE"
 echo "WAYLAND_DISPLAY=\$WAYLAND_DISPLAY" >> "\$LOG_FILE"
+
+# Force resolution on both HDMI ports
 if [ -n "$RESOLUTION" ]; then
     for i in {1..3}; do
         wlr-randr --output HDMI-A-1 --on --custom-mode $RESOLUTION >> "\$LOG_FILE" 2>&1 || echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
@@ -94,7 +96,7 @@ systemctl enable set-resolution.service
 
 # Inform user
 if [ -n "$RESOLUTION" ]; then
-    echo "Resolution for $SCREEN_MODEL ($RESOLUTION) will be applied to both HDMI-A-1 and HDMI-A-2 after reboot."
+    echo "Resolution for $SCREEN_MODEL ($RESOLUTION) will be forced on both HDMI-A-1 and HDMI-A-2 after reboot."
     echo "Check /home/pi/resolution_log.txt after reboot for debugging."
 else
     echo "Default Pi settings will be used after reboot."
