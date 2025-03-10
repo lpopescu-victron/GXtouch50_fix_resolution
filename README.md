@@ -6,7 +6,7 @@ To download and execute the script in one step:
 
 ```bash
 wget https://raw.githubusercontent.com/lpopescu-victron/GXtouch_fix_resolution/main/set_resolution.sh && chmod +x set_resolution.sh && sudo ./set_resolution.sh
-# End of script
+```
 
 Features
 Cleans up previous resolution scripts and services.
@@ -19,18 +19,7 @@ Prerequisites
 Raspberry Pi running Raspberry Pi OS (Wayland-based).
 Root privileges (sudo) to execute the script.
 Internet connection to install wlr-randr.
-How to Run the Script
-Step 1: Download the Script
-Download the script from this repository and make it executable:
 
-```bash
-wget https://raw.githubusercontent.com/lpopescu-victron/GXtouch_fix_resolution/main/set_resolution.sh && chmod +x set_resolution.sh
-Step 2: Run the Script
-Execute the script with sudo:
-
-b```bash
-sudo ./set_resolution.sh
-Step 3: Select Screen Model
 When prompted, choose a screen model by entering a number:
 
 text
@@ -63,6 +52,7 @@ After reboot, inspect the log file:
 
 ```bash
 cat /home/pi/resolution_log.txt
+```
 
 Look for:
 
@@ -75,25 +65,25 @@ List available outputs and their resolutions:
 ```bash
 export XDG_RUNTIME_DIR=/run/user/1000 && export WAYLAND_DISPLAY=wayland-0 && wlr-randr
 Ensure HDMI-A-1 and HDMI-A-2 reflect the expected resolution (e.g., 800x480 or 1024x600).
-
+```
 Check Systemd Service Status
 Verify the service ran successfully:
 
 ```bash
 sudo systemctl status set-resolution.service
-
+```
 If it failed, check the ExecStart output in the status or log file.
 Restart the service manually if needed:
 
 ```bash
 sudo systemctl restart set-resolution.service
-
+```
 Common Issues
 "Command not found: wlr-randr": Ensure apt install wlr-randr completed successfully. Check your internet connection and run:
 
 ```bash
 sudo apt update && sudo apt install -y wlr-randr
-
+```
 Resolution not applied: Confirm Wayland is in use (echo $XDG_SESSION_TYPE should output wayland). If using X11, this script won’t work as expected.
 Permission errors: Ensure the script is run with sudo.
 Manual Cleanup
@@ -102,7 +92,7 @@ To remove the script and its components:
 
 ```bash
 sudo systemctl stop set-resolution.service && sudo systemctl disable set-resolution.service && sudo rm -f /etc/systemd/system/set-resolution.service && sudo rm -f /home/pi/set_resolution.sh && sudo rm -f /home/pi/resolution_log.txt && sudo systemctl daemon-reload
-
+```
 Notes
 The script assumes the user is pi. Adjust paths and ownership if using a different user.
 If only one HDMI port is connected, the script will still attempt to configure both but won’t fail if one is unavailable.
