@@ -87,8 +87,9 @@ chown pi:pi "$RESOLUTION_SCRIPT"
 chown pi:pi "$WAYFIRE_CONFIG"
 chmod 644 "$WAYFIRE_CONFIG"
 
-# Skip immediate application, rely on reboot
+# Skip immediate application entirely
 echo "Resolution will be applied after reboot based on detected screens."
+echo "After reboot, you will see detection messages in the terminal."
 
 # Clean up this script
 echo "Cleaning up downloaded script..."
@@ -96,5 +97,5 @@ rm -f "$0"
 
 # Reboot the Pi
 echo "Rebooting now to apply changes permanently..."
-echo "After reboot, check resolution with: wlr-randr"
+echo "Check resolution post-reboot with: wlr-randr"
 reboot
