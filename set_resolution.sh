@@ -62,7 +62,7 @@ echo "Selected screen model: $SCREEN_MODEL"
 echo "Creating new set_resolution.sh..."
 cat <<EOF > /home/pi/set_resolution.sh
 #!/bin/bash
-sleep 60
+sleep 10
 LOG_FILE="/home/pi/resolution_log.txt"
 touch "\$LOG_FILE"
 chmod 666 "\$LOG_FILE"
@@ -74,13 +74,35 @@ echo "WAYLAND_DISPLAY=\$WAYLAND_DISPLAY" >> "\$LOG_FILE"
 
 # Force resolution on both HDMI ports
 if [ -n "$RESOLUTION" ]; then
-    for i in {1..3}; do
-        wlr-randr --output HDMI-A-1 --on --custom-mode $RESOLUTION >> "\$LOG_FILE" 2>/dev/null || echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
-        wlr-randr --output HDMI-A-2 --on --custom-mode $RESOLUTION >> "\$LOG_FILE" 2>/dev/null || echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
-        sleep 5
-        wlr-randr >> "\$LOG_FILE" 2>/dev/null
-        grep -q "$RESOLUTION" "\$LOG_FILE" && break
+    # Retry logic for HDMI-A-1
+    for i in {1..5}; do
+        echo "Attempt \$i: Applying resolution $RESOLUTION to HDMI-A-1..." >> "\$LOG_FILE"
+        wlr-randr --output HDMI-A-1 --on --custom-mode $RESOLUTION >> "\$LOG_FILE" 2>&1
+        if [ \$? -eq 0 ]; then
+            echo "Resolution applied successfully to HDMI-A-1." >> "\$LOG_FILE"
+            break
+        else
+            echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
+            sleep 5
+        fi
     done
+
+    # Retry logic for HDMI-A-2
+    for i in {1..5}; do
+        echo "Attempt \$i: Applying resolution $RESOLUTION to HDMI-A-2..." >> "\$LOG_FILE"
+        wlr-randr --output HDMI-A-2 --on --custom-mode $RESOLUTION >> "\$LOG_FILE" 2>&1
+        if [ \$? -eq 0 ]; then
+            echo "Resolution applied successfully to HDMI-A-2." >> "\$LOG_FILE"
+            break
+        else
+            echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
+            sleep 5
+        fi
+    done
+
+    # Verify resolution
+    wlr-randr >> "\$LOG_FILE" 2>&1
+    grep -q "$RESOLUTION" "\$LOG_FILE" && echo "Resolution applied successfully." >> "\$LOG_FILE" || echo "Failed to apply resolution." >> "\$LOG_FILE"
 fi
 echo "Script completed at \$(date)" >> "\$LOG_FILE"
 EOF
