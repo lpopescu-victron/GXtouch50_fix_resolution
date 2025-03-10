@@ -66,7 +66,7 @@ else
     fi
 fi
 
-# Create a separate resolution script with selected resolution and logging
+# Create a separate resolution script with fixed resolution and logging
 RESOLUTION_SCRIPT="/home/pi/set_resolution_auto.sh"
 cat <<EOF > "$RESOLUTION_SCRIPT"
 #!/bin/bash
@@ -78,43 +78,22 @@ echo "Resolution script started at \$(date)" > "\$LOG_FILE"
 sleep 5
 echo "Waited 5 seconds for display initialization" >> "\$LOG_FILE"
 
-for i in {1..5}; do
-    # Apply to HDMI-A-1
-    HDMI1_MODEL=\$(wlr-randr | grep -A1 "HDMI-A-1" | grep -o '"[^"]*"' | head -n1)
-    if [ -n "\$HDMI1_MODEL" ]; then
-        echo "Detected \$HDMI1_MODEL on HDMI-A-1, applying selected model: $SCREEN_MODEL..." | tee -a "\$LOG_FILE"
-    else
-        echo "No screen detected on HDMI-A-1, still applying selected model: $SCREEN_MODEL..." | tee -a "\$LOG_FILE"
-    fi
-    if [ "$RESOLUTION" != "default" ]; then
-        wlr-randr --output HDMI-A-1 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && HDMI1_SET=true || HDMI1_SET=false
-        [ "\$HDMI1_SET" = false ] && echo "Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
-    else
-        echo "Using default resolution for HDMI-A-1" | tee -a "\$LOG_FILE"
-        HDMI1_SET=true
-    fi
+# Apply to HDMI-A-1
+echo "Applying selected model: $SCREEN_MODEL to HDMI-A-1..." | tee -a "\$LOG_FILE"
+if [ "$RESOLUTION" != "default" ]; then
+    wlr-randr --output HDMI-A-1 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && echo "Successfully set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE" || echo "Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
+else
+    echo "Using default resolution for HDMI-A-1" | tee -a "\$LOG_FILE"
+fi
 
-    # Apply to HDMI-A-2
-    HDMI2_MODEL=\$(wlr-randr | grep -A1 "HDMI-A-2" | grep -o '"[^"]*"' | head -n1)
-    if [ -n "\$HDMI2_MODEL" ]; then
-        echo "Detected \$HDMI2_MODEL on HDMI-A-2, applying selected model: $SCREEN_MODEL..." | tee -a "\$LOG_FILE"
-    else
-        echo "No screen detected on HDMI-A-2, still applying selected model: $SCREEN_MODEL..." | tee -a "\$LOG_FILE"
-    fi
-    if [ "$RESOLUTION" != "default" ]; then
-        wlr-randr --output HDMI-A-2 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && HDMI2_SET=true || HDMI2_SET=false
-        [ "\$HDMI2_SET" = false ] && echo "Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
-    else
-        echo "Using default resolution for HDMI-A-2" | tee -a "\$LOG_FILE"
-        HDMI2_SET=true
-    fi
+# Apply to HDMI-A-2
+echo "Applying selected model: $SCREEN_MODEL to HDMI-A-2..." | tee -a "\$LOG_FILE"
+if [ "$RESOLUTION" != "default" ]; then
+    wlr-randr --output HDMI-A-2 --custom-mode $RESOLUTION 2>>"\$LOG_FILE" && echo "Successfully set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE" || echo "Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
+else
+    echo "Using default resolution for HDMI-A-2" | tee -a "\$LOG_FILE"
+fi
 
-    # Exit loop if both are set or no further changes needed
-    if [ "\$HDMI1_SET" = true ] && [ "\$HDMI2_SET" = true ]; then
-        break
-    fi
-    sleep 2  # Wait 2 seconds before retrying
-done
 echo "Resolution setup complete for this session at \$(date)" | tee -a "\$LOG_FILE"
 EOF
 
