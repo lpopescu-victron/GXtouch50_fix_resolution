@@ -62,7 +62,7 @@ echo "Selected screen model: $SCREEN_MODEL"
 echo "Creating new set_resolution.sh..."
 cat <<EOF > /home/pi/set_resolution.sh
 #!/bin/bash
-sleep 30
+sleep 5
 LOG_FILE="/home/pi/resolution_log.txt"
 touch "\$LOG_FILE"
 chmod 666 "\$LOG_FILE"
@@ -83,7 +83,7 @@ if [ -n "$RESOLUTION" ]; then
             break
         else
             echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
-            sleep 5
+            sleep 2
         fi
     done
 
@@ -96,7 +96,7 @@ if [ -n "$RESOLUTION" ]; then
             break
         else
             echo "Attempt \$i: Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
-            sleep 5
+            sleep 2
         fi
     done
 
