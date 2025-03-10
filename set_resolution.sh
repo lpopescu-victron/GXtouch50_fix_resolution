@@ -120,6 +120,11 @@ if [ -n "$RESOLUTION" ]; then
 else
     echo "Default Pi settings will be used after reboot."
 fi
+
+# Delete the downloaded Git script
+echo "Deleting the downloaded Git script..."
+rm -f "$(basename "$0")" && echo "Deleted the downloaded Git script."
+
 echo "Rebooting now..."
 
 # Reboot
