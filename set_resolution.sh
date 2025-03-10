@@ -61,7 +61,9 @@ echo "Waited 15 seconds for display initialization" >> "\$LOG_FILE"
 
 # Ensure Wayland environment
 export XDG_RUNTIME_DIR=/run/user/\$(id -u)
+export WAYLAND_DISPLAY=wayland-0
 echo "Set XDG_RUNTIME_DIR to \$XDG_RUNTIME_DIR" >> "\$LOG_FILE"
+echo "Set WAYLAND_DISPLAY to \$WAYLAND_DISPLAY" >> "\$LOG_FILE"
 
 # Apply to HDMI-A-1
 echo "Applying selected model: $SCREEN_MODEL to HDMI-A-1..." | tee -a "\$LOG_FILE"
@@ -91,17 +93,17 @@ SERVICE_FILE="/etc/systemd/system/set-resolution.service"
 cat <<EOF > "$SERVICE_FILE"
 [Unit]
 Description=Set screen resolution on HDMI ports
-After=graphical.target
-Wants=graphical.target
+After=multi-user.target
+Wants=multi-user.target
 
 [Service]
 Type=oneshot
 User=pi
-Environment=DISPLAY=:0
+Environment=DISPLAY=:0 WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/1000
 ExecStart=/home/pi/set_resolution_auto.sh
 RemainAfterExit=yes
 Restart=on-failure
-RestartSec=5
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
@@ -121,5 +123,5 @@ rm -f "$0"
 
 # Reboot the Pi
 echo "Rebooting now to apply changes permanently..."
-echo "Post-reboot, check resolution with: wlr-randr"
+echo "Post-reboot, check resolution with: wlr-randr and service status with: systemctl status set-resolution.service"
 reboot
