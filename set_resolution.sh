@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Script to set resolution based on manually selected screen model for Raspberry Pi OS
+# Script to set resolution on both HDMI ports based on manually selected screen model for Raspberry Pi OS
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then
@@ -43,7 +43,7 @@ esac
 
 echo "Selected screen model: $SCREEN_MODEL"
 
-# Configure /etc/rc.local to set resolution at boot with logging
+# Configure /etc/rc.local to set resolution on both HDMI ports at boot with logging
 echo "Configuring /etc/rc.local..."
 cat <<EOF > /etc/rc.local
 #!/bin/bash
@@ -54,9 +54,8 @@ chmod 666 "\$LOG_FILE"
 echo "rc.local started at \$(date)" > "\$LOG_FILE"
 if [ -n "$RESOLUTION" ]; then
     su - pi -c "wlr-randr --output HDMI-A-1 --on --custom-mode $RESOLUTION" >> "\$LOG_FILE" 2>&1 || echo "Failed to set $RESOLUTION on HDMI-A-1" >> "\$LOG_FILE"
-    su - pi -c "wlr-randr --output HDMI-A-1" >> "\$LOG_FILE" 2>&1  # Log current state
-    # Uncomment the next line if using HDMI-A-2
-    # su - pi -c "wlr-randr --output HDMI-A-2 --on --custom-mode $RESOLUTION" >> "\$LOG_FILE" 2>&1
+    su - pi -c "wlr-randr --output HDMI-A-2 --on --custom-mode $RESOLUTION" >> "\$LOG_FILE" 2>&1 || echo "Failed to set $RESOLUTION on HDMI-A-2" >> "\$LOG_FILE"
+    su - pi -c "wlr-randr" >> "\$LOG_FILE" 2>&1  # Log current state of all outputs
 fi
 echo "rc.local completed at \$(date)" >> "\$LOG_FILE"
 exit 0
@@ -67,7 +66,7 @@ chmod +x /etc/rc.local
 
 # Inform user
 if [ -n "$RESOLUTION" ]; then
-    echo "Resolution for $SCREEN_MODEL ($RESOLUTION) will be applied after reboot."
+    echo "Resolution for $SCREEN_MODEL ($RESOLUTION) will be applied to both HDMI-A-1 and HDMI-A-2 after reboot."
     echo "Check /home/pi/resolution_log.txt after reboot for debugging."
 else
     echo "Default Pi settings will be used after reboot."
